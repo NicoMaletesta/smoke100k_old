@@ -1,9 +1,7 @@
 """
 utils.py — Loss, metriche, TensorBoard helpers e checkpointing per training
-Aggiornamenti principali:
+
 - combined_loss ora combina: Soft IoU, Soft Dice, BCEWithLogits, Focal Loss, Focal-Tversky, L1, Boundary Loss
-- implementazioni stabili e compatte per Focal e Focal-Tversky
-- le altre utility (dice, iou soft, sobel boundary) restano presenti
 """
 
 import os
@@ -204,7 +202,7 @@ def focal_loss_with_logits(logits: torch.Tensor, targets: torch.Tensor, gamma: f
     Binary focal loss using logits (numerically stable).
     Supports soft targets (targets in [0,1]).
     Implementation follows: FL = - alpha * (1-pt)^gamma * log(pt) with pt = sigmoid(logits) for positive, (1-sigmoid) for negative.
-    For soft targets we compute a balanced per-pixel term.
+
     """
     # flatten shapes
     if logits.dim() == 4 and logits.size(1) == 1:

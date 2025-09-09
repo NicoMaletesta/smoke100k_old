@@ -1,0 +1,90 @@
+absl-py==2.2.2
+albucore==0.0.24
+albumentations==2.0.8
+annotated-types==0.7.0
+astunparse==1.6.3
+certifi==2025.8.3
+charset-normalizer==3.4.3
+coloredlogs==15.0.1
+contourpy==1.3.2
+coverage==7.10.6
+cycler==0.12.1
+Deprecated @ file:///opt/conda/conda-bld/deprecated_1659726428456/work
+exceptiongroup==1.3.0
+filelock @ file:///croot/filelock_1744281381737/work
+flatbuffers==25.2.10
+fonttools==4.58.0
+fsspec @ file:///croot/fsspec_1747117721425/work
+gast==0.6.0
+gmpy2 @ file:///croot/gmpy2_1738085463648/work
+google-pasta==0.2.0
+grpcio==1.71.0
+h5py==3.14.0
+humanfriendly==10.0
+idna==3.10
+importlib_metadata @ file:///croot/importlib_metadata-suite_1732633488278/work
+iniconfig==2.1.0
+Jinja2 @ file:///croot/jinja2_1741710844255/work
+joblib==1.5.0
+keras==3.11.3
+kiwisolver==1.4.8
+libclang==18.1.1
+Markdown==3.8
+markdown-it-py==4.0.0
+MarkupSafe @ file:///croot/markupsafe_1738584038848/work
+matplotlib==3.10.3
+mdurl==0.1.2
+mkl-service==2.4.0
+mkl_fft @ file:///io/mkl313/mkl_fft_1730824109137/work
+mkl_random @ file:///io/mkl313/mkl_random_1730823916628/work
+ml_dtypes==0.5.3
+mpmath @ file:///croot/mpmath_1690848262763/work
+namex==0.1.0
+networkx @ file:///croot/networkx_1737039604450/work
+numpy==2.2.6
+onnx==1.18.0
+onnxruntime==1.22.0
+opencv-python==4.11.0.86
+opencv-python-headless==4.11.0.86
+opentelemetry-api @ file:///croot/opentelemetry-api_1743171649300/work
+opt_einsum==3.4.0
+optree==0.17.0
+packaging==25.0
+pandas==2.3.2
+pillow @ file:///croot/pillow_1744613067434/work
+pluggy==1.6.0
+protobuf==6.32.0
+pydantic==2.11.4
+pydantic_core==2.33.2
+Pygments==2.19.2
+pyparsing==3.2.3
+pytest==8.4.1
+pytest-cov==6.2.1
+python-dateutil==2.9.0.post0
+pytz==2025.2
+PyYAML==6.0.2
+requests==2.32.5
+rich==14.1.0
+scikit-learn==1.7.0
+scipy==1.15.3
+simsimd==6.2.1
+six==1.17.0
+stringzilla==3.12.5
+sympy @ file:///croot/sympy_1738108488918/work
+tensorboard==2.20.0
+tensorboard-data-server==0.7.2
+tensorflow==2.20.0
+termcolor==3.1.0
+threadpoolctl==3.6.0
+tomli==2.2.1
+torch @ file:///croot/libtorch_1746637505019/work
+torchaudio @ file:///croot/torchaudio_1739894002011/work
+torchvision @ file:///croot/torchvision_1746818797271/work
+tqdm @ file:///croot/tqdm_1738943501192/work
+typing-inspection==0.4.0
+typing_extensions @ file:///croot/typing_extensions_1734714854207/work
+tzdata==2025.2
+urllib3==2.5.0
+Werkzeug==3.1.3
+wrapt @ file:///croot/wrapt_1736540904746/work
+zipp @ file:///croot/zipp_1732630741423/work

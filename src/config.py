@@ -1,15 +1,14 @@
 # config.py
 # ─── TRAINING ────────────────────────────────────────────
 TRAIN = {
-    'data_dir':    r"D:\Immagini\smoke100kprocessed",
-    'batch_size':   16,
-    'epochs':      50,
-    'img_size':   512,                # per il training
-    'lr':         1e-4,
-    # Loss weights consigliati come punto di partenza per GT soft (Smoke100k)
-    # Ho scelto valori bilanciati: BCE + Dice standard, Soft IoU come termine complementare,
-    # Focal per i pixel difficili, Focal-Tversky per controllare FP/FN, L1 per riprodurre la soft GT
-    # Boundary per migliorare i bordi (transizioni soft).
+    "data_dir":    r"D:\Immagini\smoke100kprocessed",
+    "batch_size":   16,
+    "epochs":      50,
+    "img_size":   512,                # per il training
+    "lr":         1e-4,
+
+    # Loss weights
+
     "bce_weight": 1.0,
     "dice_weight": 1.0,
     "soft_iou_weight": 0.5,
@@ -23,7 +22,10 @@ TRAIN = {
     "l1_weight": 0.1,
     "boundary_weight": 0.2,
     "patience":   20,                 # early stopping
-    'save_mode':  'best',             # 'best' | 'all'
-    'checkpoint_dir': r"D:\Documenti\smokedetector8sept",
-    'log_dir':        r"D:\Documenti\smokedetector8sept\logs",
+    "save_mode":  'best',             # 'best' | 'all'
+    "checkpoint_dir": r"D:\Documenti\smokedetector8sept",
+    "log_dir":        r"D:\Documenti\smokedetector8sept\logs",
+    #percorso per fare il resume del training a partire da un modello ( None per partire da zero)
+    "resume": None
+
 }

@@ -1,3 +1,0 @@
-=== Folder testing complete ===
-Files evaluated: 90000
-Average IoU: 0.2789 Dice: 0.3280 Prec: 0.3701 Rec: 0.7789

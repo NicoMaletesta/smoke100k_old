@@ -489,8 +489,8 @@ def mode_image(model, image_path, mask_path, size, device, thr=0.5, save_probmap
 # ------------------ CLI ------------------
 if __name__ == '__main__':
     p = argparse.ArgumentParser(description='Testing script for Smoke segmentation (three measurement modes).')
-    p.add_argument('--mode', choices=['image','folder'], default="folder")
-    p.add_argument('--model_path', type=str, default=r"/home/nicola/Documenti/testsmoke100k/smoke_best.pth")
+    p.add_argument('--mode', choices=['image','folder'], default="image")
+    p.add_argument('--model_path', type=str, default=r"/home/nicola/Documenti/8sept/smoke_best.pth")
     p.add_argument('--image_path', type=str, default=r"/home/nicola/Scaricati/smoke100kprocessed/test/images/smoke100k-H_test_000774.png")
     p.add_argument('--mask_path', type=str, default= r"/home/nicola/Scaricati/smoke100kprocessed/test/masks/smoke100k-H_test_000774.png")
     p.add_argument('--image_dir', type=str, default=r"/home/nicola/Scaricati/smoke100kprocessed/test/images")

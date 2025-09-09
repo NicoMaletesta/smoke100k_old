@@ -231,7 +231,7 @@ def mode_batch_folder(model, image_dir, out_dir, size, device, batch_size=8, thr
 # ------------------ CLI ------------------
 if __name__ == '__main__':
     p = argparse.ArgumentParser(description='Inference-only script for Smoke segmentation (image/video/folder)')
-    p.add_argument('--mode', choices=['image','video','folder'], default="folder")
+    p.add_argument('--mode', choices=['image','video','folder'], default="image")
     p.add_argument('--model_path', type=str, default=r"/home/nicola/Documenti/8sept/smoke_best.pth")
     p.add_argument('--image_path', type=str, default=r"/home/nicola/Scrivania/test image from the net/20680295374_7af01a40b6_o.jpg")
     p.add_argument('--video_path', type=str, default=r"/home/nicola/Scrivania/test image from the net/smoke2.mp4")
