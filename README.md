@@ -14,7 +14,7 @@ Caratteristiche principali:
 * Encoder: ResNet34 (layer1..layer4) usato come back-bone.
 * Bottleneck: `ConvBlock(512,512)`.
 * Decoder: più `UpBlock` che concatenano skip connections e ricostruiscono risoluzioni fino a 256×256; infine una convoluzione 1×1 e un *final upsample* per riportare l'output a 512×512 quando necessario. 
-* Output: logits per canale (default `out_channels=1` per mask binaria/probabilità). :contentReference[oaicite:2]{index=2} :contentReference[oaicite:3]{index=3}
+* Output: logits per canale.
 
 Per eseguire un test rapido del modello è incluso un test di sanity che costruisce un batch random e verifica le shape (vedi `src/model.py`).
 
