@@ -3,7 +3,7 @@ from pathlib import Path
 from PIL import Image
 import numpy as np
 import torch
-from src import test_smoke
+from src import measure_smoke
 
 class FakeModel:
     def __init__(self, prob=0.9):

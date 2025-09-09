@@ -3,7 +3,7 @@ import numpy as np
 from PIL import Image
 from pathlib import Path
 import torch
-from src import test_smoke
+from src import measure_smoke
 
 def _save_png(path: Path, arr: np.ndarray):
     Image.fromarray(arr.astype(arr.dtype)).save(path)

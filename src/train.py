@@ -172,7 +172,7 @@ def parse_args():
     parser.add_argument("--l1_weight", type=float, default=TRAIN.get("l1_weight", 0.1))
     parser.add_argument("--boundary_weight", type=float, default=TRAIN.get("boundary_weight", 0.2))
 
-    parser.add_argument("--resume", type=str, default=r"D:\Documenti\smokedetector\smoke_best.pth", help="Path to checkpoint to resume training from")
+    parser.add_argument("--resume", type=str, default=None, help="Path to checkpoint to resume training from")
     parser.add_argument("--save_examples_n", type=int, default=4, help="How many val examples to log to TB each epoch")
     return parser.parse_args()
 
