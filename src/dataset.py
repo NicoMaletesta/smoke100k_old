@@ -327,9 +327,9 @@ if __name__ == "__main__":
                         help="Base processed smoke dir. Default: ~/fire_smoke_segmentation/data/processed/smoke")
     parser.add_argument("--subset", type=str, default="train", help="Subset folder: train/val/test")
     parser.add_argument("--batch_size", type=int, default=4, help="Batch size for DataLoader quick check")
-    parser.add_argument("--n_debug", type=int, default=8, help="How many debug examples to save")
+    parser.add_argument("--n_debug", type=int, default=15, help="How many debug examples to save")
     parser.add_argument("--debug_out", type=str, default=r"/home/nicola/Documenti/testsmoke100k", help="Folder where debug samples are written")
-    parser.add_argument("--run_binary_check", action="store_true", help="Also run a binary-mode sanity check")
+    parser.add_argument("--run_binary_check", default= True, help="Also run a binary-mode sanity check")
     parser.add_argument("--max_checks", type=int, default=16, help="Max number of samples to check stats for")
     args = parser.parse_args()
 

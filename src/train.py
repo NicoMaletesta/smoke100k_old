@@ -1,9 +1,12 @@
+# ===== file: train.py =====
 #!/usr/bin/env python3
 """
-train.py — training loop aggiornato per maschere soft.
-Modifiche:
-- argparse esteso per i nuovi pesi e iperparametri della combined_loss
-- passaggio degli argomenti a combined_loss in train/val
+train.py — training loop aggiornato per maschere soft/binary.
+Modifiche principali rispetto alla versione originale:
+- legge target_mode e binary_threshold dalla config / argparser
+- passa target_mode/binary_threshold a SmokeDataset
+- mantiene i default esattamente come nel tuo TRAIN (se presenti)
+- monitor_metric e threshold_for_monitor presi da config/argparser
 """
 
 import os
@@ -54,8 +57,9 @@ def safe_save_checkpoint(path, model, optimizer=None, scheduler=None, epoch=None
         }
         torch.save(payload, path)
 
+
 def safe_load_checkpoint(path, model, optimizer=None, scheduler=None):
-    ckpt = torch.load(path, map_location="cpu", weights_only=True)
+    ckpt = torch.load(path, map_location="cpu")
     best_metric = None
     val_loss = None
     start_epoch = 1
@@ -107,6 +111,7 @@ def safe_load_checkpoint(path, model, optimizer=None, scheduler=None):
             best_metric = ckpt["metric"]
     return start_epoch, best_metric, val_loss
 
+
 def save_metrics_csv(log_dir, epoch_list, train_losses, val_losses, val_soft_ious, val_binary_ious, val_dices):
     os.makedirs(log_dir, exist_ok=True)
     path = os.path.join(log_dir, "metrics.csv")
@@ -115,6 +120,7 @@ def save_metrics_csv(log_dir, epoch_list, train_losses, val_losses, val_soft_iou
         w.writerow(["epoch", "train_loss", "val_loss", "val_soft_iou", "val_iou_binary", "val_dice"])
         for e, tl, vl, vsi, vib, vd in zip(epoch_list, train_losses, val_losses, val_soft_ious, val_binary_ious, val_dices):
             w.writerow([e, tl, vl, vsi, vib, vd])
+
 
 def plot_metrics(log_dir, epoch_list, train_losses, val_losses, val_soft_ious, val_binary_ious, val_dices):
     os.makedirs(log_dir, exist_ok=True)
@@ -139,7 +145,7 @@ def plot_metrics(log_dir, epoch_list, train_losses, val_losses, val_soft_ious, v
 # Argparser with new loss weights & hyperparams
 # ----------------------------
 def parse_args():
-    parser = argparse.ArgumentParser(description="Train U-Net segmenter on smoke dataset (soft masks)")
+    parser = argparse.ArgumentParser(description="Train U-Net segmenter on smoke dataset (soft or binary masks)")
     parser.add_argument("--data_dir", type=str, default=TRAIN["data_dir"],help="Path to processed smoke data root (contains train/val/test)")
     parser.add_argument("--task", type=str, default="smoke", choices=["smoke"], help="Task (only 'smoke' supported)")
     parser.add_argument("--batch_size", type=int, default=TRAIN["batch_size"])
@@ -151,9 +157,17 @@ def parse_args():
     parser.add_argument("--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu")
     parser.add_argument("--patience", type=int, default=TRAIN["patience"])
     parser.add_argument("--save_mode", choices=["best", "all"], default=TRAIN["save_mode"])
-    parser.add_argument("--threshold_for_monitor", type=float, default=0.5,
+
+    # dataset mode & thresholds
+    parser.add_argument("--target_mode", choices=["soft","binary"], type=str, default=TRAIN.get("target_mode", "soft"),
+                        help="Whether to feed soft masks (continuous) or binary masks to the network")
+    # binary_threshold expected in [0,1] because dataset normalizes masks to [0,1]
+    parser.add_argument("--binary_threshold", type=float, default=TRAIN.get("binary_threshold", 0.5),
+                        help="Threshold in [0,1] used by SmokeDataset when target_mode=='binary'")
+
+    parser.add_argument("--threshold_for_monitor", type=float, default=TRAIN.get("threshold_for_monitor", 0.5),
                         help="Threshold for binarizing predictions when computing monitored binary IoU metric")
-    parser.add_argument("--monitor_metric", choices=["soft_iou", "binary_iou"], default="soft_iou",
+    parser.add_argument("--monitor_metric", choices=["soft_iou", "binary_iou"], default=TRAIN.get("monitor_metric", "soft_iou"),
                         help="Which metric to use for checkpointing/early stopping. 'soft_iou' recommended when training with soft masks.")
     parser.add_argument("--num_workers", type=int, default=4, help="DataLoader num_workers")
     parser.add_argument("--seed", type=int, default=42)
@@ -177,9 +191,9 @@ def parse_args():
     return parser.parse_args()
 
 # ----------------------------
-# Dataloaders (unchanged)
+# Dataloaders (unchanged structure, now accepts target_mode/threshold)
 # ----------------------------
-def build_dataloaders(data_dir: str, batch_size: int, num_workers: int = 4):
+def build_dataloaders(data_dir: str, batch_size: int, num_workers: int = 4, target_mode: str = "soft", binary_threshold: float = 0.5):
     color_tf = get_color_transforms()
     spatial_factory = get_spatial_transforms
 
@@ -193,15 +207,18 @@ def build_dataloaders(data_dir: str, batch_size: int, num_workers: int = 4):
         masks_dir=train_mask_dir,
         color_transforms=color_tf,
         spatial_transforms_factory=spatial_factory,
-        target_mode="soft",
+        target_mode=target_mode,
+        binary_threshold=binary_threshold,
         preload=True
     )
+    # for val we avoid color jitter / heavy spatial augs; spatial tf None -> identity
     val_ds = SmokeDataset(
         images_dir=val_img_dir,
         masks_dir=val_mask_dir,
         color_transforms=None,
         spatial_transforms_factory=None,
-        target_mode="soft",
+        target_mode=target_mode,
+        binary_threshold=binary_threshold,
         preload=False
     )
 
@@ -227,7 +244,7 @@ def train():
     tb_dir = os.path.join(args.log_dir, "tb", datetime.now().strftime("%Y%m%d-%H%M%S"))
     tb_logger = TBLogger(log_dir=tb_dir)
 
-    train_loader, val_loader = build_dataloaders(args.data_dir, args.batch_size, args.num_workers)
+    train_loader, val_loader = build_dataloaders(args.data_dir, args.batch_size, args.num_workers, args.target_mode, args.binary_threshold)
 
     device = torch.device(args.device)
     model = UNetSegmenter(out_channels=1, pretrained=True).to(device)
@@ -431,3 +448,4 @@ def train():
 
 if __name__ == "__main__":
     train()
+
