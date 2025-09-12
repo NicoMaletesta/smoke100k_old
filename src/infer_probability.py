@@ -2,7 +2,7 @@
 """
 infer_probability.py
 
-Inference-only script for Smoke segmentation (IMAGE and FOLDER modes only).
+Inference-only script for Smoke segmentation (IMAGE, FOLDER and VIDEO modes).
 Goal: produce overlays that visualize per-pixel probabilities as precisely as possible
       (opacity per-pixel = prob * alpha_max). No binary masks are produced by default.
 
@@ -12,6 +12,7 @@ import os
 import argparse
 import random
 from pathlib import Path
+import time
 
 import cv2
 import numpy as np
@@ -56,7 +57,7 @@ def load_model(path: str, device: torch.device):
 # ------------------ preprocessing / helpers ------------------
 def preprocess_image(path: str, size: int, device: torch.device):
     """
-    Load image, resize to (size,size) with bilinear, convert to tensor shape 1,C,H,W in [0,1]
+    Load image from disk, resize to (size,size) with bilinear, convert to tensor shape 1,C,H,W in [0,1]
     Returns (tensor, orig_rgb_numpy)
     """
     img = Image.open(path).convert("RGB")
@@ -65,11 +66,21 @@ def preprocess_image(path: str, size: int, device: torch.device):
     t = torch.from_numpy(np.array(img_r).transpose(2,0,1)).float().div(255.0).unsqueeze(0).to(device)
     return t, orig
 
+def preprocess_frame(frame_rgb: np.ndarray, size: int, device: torch.device):
+    """
+    Prepare a single frame (numpy RGB H,W,3 uint8) for model inference.
+    Returns tensor 1,C,H,W on device.
+    """
+    img = Image.fromarray(frame_rgb)
+    img_r = img.resize((size, size), resample=Image.BILINEAR)
+    t = torch.from_numpy(np.array(img_r).transpose(2,0,1)).float().div(255.0).unsqueeze(0).to(device)
+    return t
+
 def overlay_with_prob(orig_rgb: np.ndarray, prob_map: np.ndarray, color=(255,0,0), alpha_max: float = 1.0):
     """
     Create an overlay where each pixel is blended with `color` using alpha = prob * alpha_max.
     orig_rgb: H,W,3 uint8 (RGB)
-    prob_map: H,W float in [0,1] (same H,W as orig) OR will be resized to orig
+    prob_map: H,W float in [0,1] (same H,W as orig) OR will be resized to orig (float interpolation)
     color: tuple (R,G,B)
     alpha_max: float in [0,1], maximum opacity for prob==1
 
@@ -83,7 +94,7 @@ def overlay_with_prob(orig_rgb: np.ndarray, prob_map: np.ndarray, color=(255,0,0
     if prob_map.shape != orig.shape[:2]:
         prob_map = cv2.resize(prob_map, (orig.shape[1], orig.shape[0]), interpolation=cv2.INTER_LINEAR)
 
-    # clamp
+    # clamp and compute per-pixel alpha
     prob_map = np.clip(prob_map, 0.0, 1.0)
     alpha_map = prob_map * float(alpha_max)  # H,W
     alpha_map_3 = np.repeat(alpha_map[:, :, None], 3, axis=2)  # H,W,3
@@ -114,9 +125,8 @@ def mode_image(model, image_path, size, device, out_dir,
     os.makedirs(out_dir, exist_ok=True)
     t, orig = preprocess_image(image_path, size, device)  # t: 1,C,H,W
     with torch.no_grad():
-        # use amp if GPU available
         try:
-            with torch.cuda.amp.autocast(enabled=(device.type == 'cuda')):
+            with torch.amp.autocast(enabled=(device.type == 'cuda')):
                 logits = model(t)
         except Exception:
             logits = model(t)
@@ -138,7 +148,6 @@ def mode_image(model, image_path, size, device, out_dir,
     if save_overlay:
         overlays_dir.mkdir(parents=True, exist_ok=True)
         overlay_img = overlay_with_prob(orig, prob_np, color=color, alpha_max=alpha_max)
-        # save as BGR using opencv
         cv2.imwrite(str(overlays_dir / (stem + "_overlay.png")), cv2.cvtColor(overlay_img, cv2.COLOR_RGB2BGR))
 
     print(f"✅ Saved overlay for {image_path} -> {overlays_dir if save_overlay else out_dir}")
@@ -185,7 +194,7 @@ def mode_folder(model, image_dir, out_dir, size, device, batch_size=8,
             batch = torch.cat(tensors, dim=0)  # B,C,H,W
 
             try:
-                with torch.cuda.amp.autocast(enabled=(device.type == 'cuda')):
+                with torch.amp.autocast(enabled=(device.type == 'cuda')):
                     logits = model(batch)
             except Exception:
                 logits = model(batch)
@@ -218,13 +227,77 @@ def mode_folder(model, image_dir, out_dir, size, device, batch_size=8,
 
     print("Batch inference completed. Results in:", out_dir)
 
+# ------------------ video mode ------------------
+def mode_video(model, video_path, out_dir, size, device, save_overlay=True, alpha_max=1.0, color=(255,0,0), fps_limit=None):
+    """
+    Read video frames, predict probabilities per frame, create overlay per frame with per-pixel alpha = prob*alpha_max,
+    and write resulting video preserving original resolution and fps.
+
+    fps_limit: if set, will cap output fps to this value (useful if reading has inconsistent fps).
+    """
+    assert os.path.exists(video_path), f"Video not found: {video_path}"
+    Path(out_dir).mkdir(parents=True, exist_ok=True)
+    overlays_dir = Path(out_dir) / "video_overlay"
+    overlays_dir.mkdir(parents=True, exist_ok=True)
+
+    cap = cv2.VideoCapture(video_path)
+    assert cap.isOpened(), f"Cannot open video {video_path}"
+    fps = cap.get(cv2.CAP_PROP_FPS) or 25.0
+    if fps_limit is not None:
+        fps = min(fps, float(fps_limit))
+    w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT)) or 0
+    basename = Path(video_path).stem
+    out_file = str(Path(out_dir) / f"{basename}_prob_overlay.mp4")
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    writer = cv2.VideoWriter(out_file, fourcc, fps, (w, h))
+    pbar = tqdm(total=total, desc=f"Video {basename}", unit='frame')
+    frame_idx = 0
+    start_time = time.time()
+
+    with torch.no_grad():
+        while True:
+            ret, frame_bgr = cap.read()
+            if not ret:
+                break
+            # convert to RGB
+            rgb = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2RGB)
+            # preprocess frame to model input size
+            t = preprocess_frame(rgb, size, device)  # 1,C,H,W
+            try:
+                with torch.amp.autocast(enabled=(device.type == 'cuda')):
+                    logits = model(t)
+            except Exception:
+                logits = model(t)
+            probs = torch.sigmoid(logits)  # 1,1,Hp,Wp
+            prob = probs.squeeze(0).squeeze(0).detach().cpu().numpy()  # Hp,Wp float32
+
+            # create overlay on original resolution (float resize)
+            overlay_img = overlay_with_prob(rgb, prob, color=color, alpha_max=alpha_max)
+            # convert RGB->BGR for writer
+            out_frame = cv2.cvtColor(overlay_img, cv2.COLOR_RGB2BGR)
+            writer.write(out_frame)
+
+            frame_idx += 1
+            pbar.update(1)
+
+    cap.release()
+    writer.release()
+    pbar.close()
+    total_time = time.time() - start_time
+    avg_fps = frame_idx / total_time if total_time > 0 else 0.0
+    print(f"\n✅ Video saved -> {out_file}")
+    print(f"frames: {frame_idx}/{total} time: {total_time:.1f}s avg FPS: {avg_fps:.2f}")
+
 # ------------------ CLI ------------------
 if __name__ == '__main__':
-    p = argparse.ArgumentParser(description='Inference-only script for Smoke segmentation (image/folder)')
-    p.add_argument('--mode', choices=['image', 'folder'], default="folder")
+    p = argparse.ArgumentParser(description='Inference-only script for Smoke segmentation (image/folder/video)')
+    p.add_argument('--mode', choices=['image', 'folder', 'video'], default="video")
     p.add_argument('--model_path', type=str, default=r"/home/nicola/Documenti/smokedetector_1109/smoke_best.pth")
     p.add_argument('--image_path', type=str, default=r"/home/nicola/Scrivania/test image from the net/20680295374_7af01a40b6_o.jpg")
     p.add_argument('--image_dir', type=str, default=r"/home/nicola/Scrivania/test image from the net")
+    p.add_argument('--video_path', type=str, default=r"/home/nicola/Scrivania/test image from the net/wil.mp4")
     p.add_argument('--out_dir', type=str, default=r"/home/nicola/Documenti/smokedetector_1109/infer_prob")
     p.add_argument('--size', type=int, default=512)
     p.add_argument('--threshold', type=float, default=0, help='(present for compatibility; not used for overlays)')
@@ -273,9 +346,15 @@ if __name__ == '__main__':
         mode_image(model, args.image_path, args.size, device, args.out_dir,
                    save_probmaps=args.save_probmaps, save_probpng=args.save_probpng,
                    save_overlay=(not args.no_overlay), alpha_max=args.alpha_max, color=color)
-    else:
+    elif args.mode == 'folder':
         assert args.image_dir, '--image_dir required for folder mode'
         mode_folder(model, args.image_dir, args.out_dir, args.size, device,
                     batch_size=args.batch_size, sample_n=args.sample_n, seed=args.seed,
                     save_probmaps=args.save_probmaps, save_probpng=args.save_probpng,
                     save_overlay=(not args.no_overlay), alpha_max=args.alpha_max, color=color)
+    else:
+        # video mode
+        assert args.video_path, '--video_path required for video mode'
+        mode_video(model, args.video_path, args.out_dir, args.size, device,
+                   save_overlay=(not args.no_overlay), alpha_max=args.alpha_max, color=color)
+

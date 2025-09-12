@@ -234,7 +234,7 @@ if __name__ == '__main__':
     p.add_argument('--mode', choices=['image','video','folder'], default="video")
     p.add_argument('--model_path', type=str, default=r"/home/nicola/Documenti/smokedetector_1109/smoke_best.pth")
     p.add_argument('--image_path', type=str, default=r"/home/nicola/Scrivania/test image from the net/20680295374_7af01a40b6_o.jpg")
-    p.add_argument('--video_path', type=str, default=r"/home/nicola/Scrivania/test image from the net/Auto avvolta dalle fiamme a Sesto Calende.mp4")
+    p.add_argument('--video_path', type=str, default=r"/home/nicola/Scrivania/test image from the net/Elevideo.mp4")
     p.add_argument('--image_dir', type=str, default=r"/home/nicola/Scrivania/test image from the net")
     p.add_argument('--out_dir', type=str, default=r"/home/nicola/Documenti/smokedetector_1109/eval_model")
     p.add_argument('--size', type=int, default=512)
