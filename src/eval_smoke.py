@@ -231,14 +231,14 @@ def mode_batch_folder(model, image_dir, out_dir, size, device, batch_size=8, thr
 # ------------------ CLI ------------------
 if __name__ == '__main__':
     p = argparse.ArgumentParser(description='Inference-only script for Smoke segmentation (image/video/folder)')
-    p.add_argument('--mode', choices=['image','video','folder'], default="folder")
-    p.add_argument('--model_path', type=str, default=r"/home/nicola/Scrivania/segmentation models/smoke/smoke_best.pth")
+    p.add_argument('--mode', choices=['image','video','folder'], default="video")
+    p.add_argument('--model_path', type=str, default=r"/home/nicola/Documenti/smokedetector_1109/smoke_best.pth")
     p.add_argument('--image_path', type=str, default=r"/home/nicola/Scrivania/test image from the net/20680295374_7af01a40b6_o.jpg")
-    p.add_argument('--video_path', type=str, default=r"/home/nicola/Scrivania/test image from the net/incendiosc.mp4")
+    p.add_argument('--video_path', type=str, default=r"/home/nicola/Scrivania/test image from the net/Auto avvolta dalle fiamme a Sesto Calende.mp4")
     p.add_argument('--image_dir', type=str, default=r"/home/nicola/Scrivania/test image from the net")
-    p.add_argument('--out_dir', type=str, default=r"/home/nicola/Scaricati/checkpointssept")
+    p.add_argument('--out_dir', type=str, default=r"/home/nicola/Documenti/smokedetector_1109/eval_model")
     p.add_argument('--size', type=int, default=512)
-    p.add_argument('--threshold', type=float, default=0.5)
+    p.add_argument('--threshold', type=float, default=0.1)
     p.add_argument('--no_overlay', action='store_true', help='Do not save overlay for image mode')
     # batch options
     p.add_argument('--batch', action='store_true', help='Use batch-folder inference mode')

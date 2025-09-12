@@ -360,15 +360,15 @@ def mode_folder_and_return_summary(model,
 # ------------------ driver: run through models_dir and collate results ------------------
 def main():
     parser = argparse.ArgumentParser(description="Run folder-mode evaluation for all .pth in a folder (three modes).")
-    parser.add_argument('--models_dir', type=str, default=r"/home/nicola/Scaricati/checkpointssept", help='Directory containing .pth checkpoint files')
+    parser.add_argument('--models_dir', type=str, default=r"/home/nicola/Documenti/smokedetector_1109", help='Directory containing .pth checkpoint files')
     parser.add_argument('--image_dir', type=str, default=r"/home/nicola/Scaricati/smoke100kprocessed/test/images", help='Directory with images to evaluate')
     parser.add_argument('--mask_dir', type=str, default=r"/home/nicola/Scaricati/smoke100kprocessed/test/masks", help='Directory with ground-truth masks matching images')
-    parser.add_argument('--out_dir', type=str, default=r"/home/nicola/Scaricati/checkpointssept", help='Base output directory (per-checkpoint subfolders will be created)')
+    parser.add_argument('--out_dir', type=str, default=r"/home/nicola/Documenti/smokedetector_1109/measure_models", help='Base output directory (per-checkpoint subfolders will be created)')
     parser.add_argument('--size', type=int, default=512)
     parser.add_argument('--threshold', type=float, default=0.8)
     parser.add_argument('--batch', action='store_true', help='Use batch mode for folder testing (faster)')
     parser.add_argument('--batch_size', type=int, default=8)
-    parser.add_argument('--sample_n', type=int, default=1000)
+    parser.add_argument('--sample_n', type=int, default=2000)
     parser.add_argument('--seed', type=int, default=42)
     parser.add_argument('--save_probmaps', action='store_true', help='Save probability maps (.npy) for each image')
     parser.add_argument('--model_pattern', type=str, default="*.pth")
