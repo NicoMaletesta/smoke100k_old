@@ -185,7 +185,8 @@ def parse_args():
     parser.add_argument("--ft_gamma", type=float, default=TRAIN.get("ft_gamma", 0.75))
     parser.add_argument("--l1_weight", type=float, default=TRAIN.get("l1_weight", 0.1))
     parser.add_argument("--boundary_weight", type=float, default=TRAIN.get("boundary_weight", 0.2))
-
+    parser.add_argument("--pos_weight", type=float, default=TRAIN.get("pos_weight", None),
+                        help="Optional pos_weight for BCEWithLogits (float) or None")
     parser.add_argument("--resume", type=str, default=TRAIN.get("resume", None), help="Path to checkpoint to resume training from")
     parser.add_argument("--save_examples_n", type=int, default=4, help="How many val examples to log to TB each epoch")
     return parser.parse_args()
@@ -228,7 +229,7 @@ def build_dataloaders(data_dir: str, batch_size: int, num_workers: int = 4, targ
     return train_loader, val_loader
 
 # ----------------------------
-# Training loop (pass new params to combined_loss)
+# Training loop
 # ----------------------------
 def train():
     args = parse_args()
@@ -247,6 +248,14 @@ def train():
     train_loader, val_loader = build_dataloaders(args.data_dir, args.batch_size, args.num_workers, args.target_mode, args.binary_threshold)
 
     device = torch.device(args.device)
+    # --- pos_weight tensor (None or 1-element tensor on device) ---
+    pos_weight_cfg = args.pos_weight if hasattr(args, "pos_weight") else TRAIN.get("pos_weight", None)
+    if pos_weight_cfg is None:
+        pos_weight_tensor = None
+    else:
+        # create 1-D tensor as expected by binary_cross_entropy_with_logits
+        pos_weight_tensor = torch.tensor([float(pos_weight_cfg)], dtype=torch.float32, device=device)
+
     model = UNetSegmenter(out_channels=1, pretrained=True).to(device)
 
     optimizer = AdamW(model.parameters(), lr=args.lr)
@@ -308,7 +317,8 @@ def train():
                 ft_beta=args.ft_beta,
                 ft_gamma=args.ft_gamma,
                 l1_weight=args.l1_weight,
-                boundary_weight=args.boundary_weight
+                boundary_weight=args.boundary_weight,
+                pos_weight=pos_weight_tensor
             )
             loss.backward()
             optimizer.step()
@@ -354,7 +364,8 @@ def train():
                     ft_beta=args.ft_beta,
                     ft_gamma=args.ft_gamma,
                     l1_weight=args.l1_weight,
-                    boundary_weight=args.boundary_weight
+                    boundary_weight=args.boundary_weight,
+                    pos_weight=pos_weight_tensor
                 )
                 probs = torch.sigmoid(logits)
 

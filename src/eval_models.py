@@ -172,9 +172,9 @@ def run_folder_for_checkpoint(model: torch.nn.Module,
 # -------------------- main CLI --------------------
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Run folder-mode inference for all .pth in a folder")
-    parser.add_argument('--models_dir', type=str, default=r"/home/nicola/Documenti/smokedetector_1109", help='Directory containing .pth checkpoint files')
+    parser.add_argument('--models_dir', type=str, default=r"/home/nicola/Documenti/smokedetector_1409", help='Directory containing .pth checkpoint files')
     parser.add_argument('--image_dir', type=str, default=r"/home/nicola/Scrivania/test image from the net", help='Directory with images to run inference on')
-    parser.add_argument('--out_dir', type=str, default=r"/home/nicola/Documenti/smokedetector_1109/infer", help='Base output directory (per-checkpoint subfolders will be created)')
+    parser.add_argument('--out_dir', type=str, default=r"/home/nicola/Documenti/smokedetector_1409/infer", help='Base output directory (per-checkpoint subfolders will be created)')
     parser.add_argument('--size', type=int, default=512, help='Resize size for model input (H=W)')
     parser.add_argument('--threshold', type=float, default=0.8, help='Binarization threshold for probability -> mask')
     parser.add_argument('--batch_size', type=int, default=1)

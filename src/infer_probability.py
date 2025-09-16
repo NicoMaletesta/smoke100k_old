@@ -294,11 +294,11 @@ def mode_video(model, video_path, out_dir, size, device, save_overlay=True, alph
 if __name__ == '__main__':
     p = argparse.ArgumentParser(description='Inference-only script for Smoke segmentation (image/folder/video)')
     p.add_argument('--mode', choices=['image', 'folder', 'video'], default="video")
-    p.add_argument('--model_path', type=str, default=r"/home/nicola/Documenti/smokedetector_1109/smoke_best.pth")
+    p.add_argument('--model_path', type=str, default=r"/home/nicola/Documenti/smokeresults cell/partially_good_smokedetector/smoke_best_1409.pth")
     p.add_argument('--image_path', type=str, default=r"/home/nicola/Scrivania/test image from the net/20680295374_7af01a40b6_o.jpg")
     p.add_argument('--image_dir', type=str, default=r"/home/nicola/Scrivania/test image from the net")
-    p.add_argument('--video_path', type=str, default=r"/home/nicola/Scrivania/test image from the net/wil.mp4")
-    p.add_argument('--out_dir', type=str, default=r"/home/nicola/Documenti/smokedetector_1109/infer_prob")
+    p.add_argument('--video_path', type=str, default=r"/home/nicola/Documenti/smokeresults cell/infer_prob/wildfirevideo.mp4")
+    p.add_argument('--out_dir', type=str, default=r"/home/nicola/Documenti/results 16 settembre/infer_prob_1409")
     p.add_argument('--size', type=int, default=512)
     p.add_argument('--threshold', type=float, default=0, help='(present for compatibility; not used for overlays)')
     p.add_argument('--no_overlay', action='store_true', default=False, help='Do not save overlay images')
@@ -310,7 +310,7 @@ if __name__ == '__main__':
     p.add_argument('--seed', type=int, default=42, help='Random seed for sampling images')
     p.add_argument('--save_probmaps', action='store_true', help='Also save raw .npy probability maps (float32)')
     p.add_argument('--save_probpng', action='store_true', help='Also save a colored PNG visualization of probmap (matplotlib colormap)')
-    p.add_argument('--alpha_max', type=float, default=1.0, help='Maximum overlay opacity for prob==1.0 (0..1)')
+    p.add_argument('--alpha_max', type=float, default=0.9, help='Maximum overlay opacity for prob==1.0 (0..1)')
     args = p.parse_args()
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')

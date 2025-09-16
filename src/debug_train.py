@@ -127,7 +127,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Debug visual checks for dataset/model/checkpoint")
     parser.add_argument("--checkpoint", type=str, default=TRAIN.get("resume", None))
     parser.add_argument("--n", type=int, default=8)
-    parser.add_argument("--out_dir", type=str, default=r"/home/nicola/Scaricati/checkpointssept/debug")
+    parser.add_argument("--out_dir", type=str, default=r"/home/nicola/Documenti/smokedetector_1409/debug")
     parser.add_argument("--target_mode", type=str, choices=["soft","binary"], default=TRAIN.get("target_mode", "soft"))
     parser.add_argument("--binary_threshold", type=float, default=TRAIN.get("binary_threshold", 0.5))
     args = parser.parse_args()

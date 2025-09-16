@@ -275,7 +275,8 @@ def combined_loss(logits: torch.Tensor, targets: torch.Tensor,
                   ft_beta: float = 0.3,
                   ft_gamma: float = 0.75,
                   l1_weight: float = 0.0,
-                  boundary_weight: float = 0.0) -> torch.Tensor:
+                  boundary_weight: float = 0.0,
+                  pos_weight: torch.Tensor = None) -> torch.Tensor:
     """
     Weighted sum of:
       - BCEWithLogits
@@ -294,7 +295,12 @@ def combined_loss(logits: torch.Tensor, targets: torch.Tensor,
 
     # BCE
     if bce_weight != 0.0:
-        bce = F.binary_cross_entropy_with_logits(logits, targets)
+        if pos_weight is None:
+            bce = F.binary_cross_entropy_with_logits(logits, targets)
+        else:
+            # ensure pos_weight is on correct device and dtype
+            pw = pos_weight.to(dtype=logits.dtype, device=logits.device)
+            bce = F.binary_cross_entropy_with_logits(logits, targets, pos_weight=pw)
         total = total + bce_weight * bce
 
     # Soft Dice
