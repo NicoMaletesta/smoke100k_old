@@ -203,7 +203,7 @@ class SmokeDataset(Dataset):
         image_aug = self.color_transforms(img_pil) if self.color_transforms is not None else img_pil
 
         # 2) joint spatial transforms: create RGBA where A is mask
-        # 2) joint spatial transforms: create RGBA where A is mask
+
         mask_soft = (self.target_mode == "soft")
 
         # --- Robust handling of spatial_transforms_factory ---
@@ -224,7 +224,8 @@ class SmokeDataset(Dataset):
                 spatial_tf = self.spatial_transforms_factory        # create RGBA: R,G,B from image_aug, A from mask_pil
         # ensure same size
         if image_aug.size != mask_pil.size:
-            mask_pil = mask_pil.resize(image_aug.size, resample=Image.NEAREST)
+            resample = Image.BILINEAR if mask_soft else Image.NEAREST
+            mask_pil = mask_pil.resize(image_aug.size, resample=resample)
         combined = Image.merge("RGBA", [
             image_aug.split()[0],
             image_aug.split()[1],

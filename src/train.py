@@ -2,11 +2,7 @@
 #!/usr/bin/env python3
 """
 train.py — training loop aggiornato per maschere soft/binary.
-Modifiche principali rispetto alla versione originale:
-- legge target_mode e binary_threshold dalla config / argparser
-- passa target_mode/binary_threshold a SmokeDataset
-- mantiene i default esattamente come nel tuo TRAIN (se presenti)
-- monitor_metric e threshold_for_monitor presi da config/argparser
+
 """
 
 import os
@@ -59,7 +55,17 @@ def safe_save_checkpoint(path, model, optimizer=None, scheduler=None, epoch=None
 
 
 def safe_load_checkpoint(path, model, optimizer=None, scheduler=None):
-    ckpt = torch.load(path, map_location="cpu")
+    # Try to load with weights_only=True (safer / avoids pickle execution) when supported.
+    # Fallback to plain torch.load(...) if the argument is unsupported or an error occurs.
+    try:
+        ckpt = torch.load(path, map_location="cpu", weights_only=True)
+    except TypeError:
+        # older torch versions don't accept weights_only keyword
+        ckpt = torch.load(path, map_location="cpu")
+    except Exception:
+        # fallback to unguarded load if weights_only path failed for some reason
+        ckpt = torch.load(path, map_location="cpu")
+
     best_metric = None
     val_loss = None
     start_epoch = 1
@@ -81,6 +87,7 @@ def safe_load_checkpoint(path, model, optimizer=None, scheduler=None):
                 pass
         else:
             try:
+                # ckpt might be a plain state_dict mapping name->tensor
                 model.load_state_dict(ckpt)
             except Exception:
                 pass
@@ -189,6 +196,10 @@ def parse_args():
                         help="Optional pos_weight for BCEWithLogits (float) or None")
     parser.add_argument("--resume", type=str, default=TRAIN.get("resume", None), help="Path to checkpoint to resume training from")
     parser.add_argument("--save_examples_n", type=int, default=4, help="How many val examples to log to TB each epoch")
+    parser.add_argument("--reinit_optimizer", action="store_true", default=TRAIN.get("reinit_optimizer", False),
+                        help="If set, reinitialize optimizer and scheduler instead of restoring their state from a checkpoint.")
+    parser.add_argument("--restore_metrics", action="store_true", default=TRAIN.get("restore_metrics", True),
+                        help="If set, restore start_epoch/best_metric/val_loss from checkpoint when resuming; otherwise keep fresh metrics.")
     return parser.parse_args()
 
 # ----------------------------
@@ -268,13 +279,25 @@ def train():
         if os.path.exists(args.resume):
             print(f"-> Resuming from checkpoint: {args.resume}")
             try:
-                s_epoch, s_best_metric, s_val_loss = safe_load_checkpoint(args.resume, model, optimizer, scheduler)
-                if s_epoch:
-                    start_epoch = s_epoch
-                if s_best_metric is not None:
-                    best_metric = s_best_metric
-                if s_val_loss is not None:
-                    best_val_loss = s_val_loss
+                if args.reinit_optimizer:
+                    # Load only model weights (do not restore optimizer/scheduler states)
+                    s_epoch, s_best_metric, s_val_loss = safe_load_checkpoint(args.resume, model, optimizer=None, scheduler=None)
+                    # Reinitialize optimizer and scheduler with current hyperparams to ensure fresh state
+                    optimizer = AdamW(model.parameters(), lr=args.lr)
+                    scheduler = CosineAnnealingLR(optimizer, T_max=args.epochs)
+                    print("  Loaded model weights only; optimizer and scheduler reinitialized (reinit_optimizer=True).")
+                else:
+                    # Default behaviour: restore model + optimizer + scheduler states (if present in checkpoint)
+                    s_epoch, s_best_metric, s_val_loss = safe_load_checkpoint(args.resume, model, optimizer, scheduler)
+
+                # Restore metrics only if requested
+                if args.restore_metrics:
+                    if s_epoch:
+                        start_epoch = s_epoch
+                    if s_best_metric is not None:
+                        best_metric = s_best_metric
+                    if s_val_loss is not None:
+                        best_val_loss = s_val_loss
                 print(f"  Resumed. Starting epoch {start_epoch}. Best metric: {best_metric}, Best val_loss: {best_val_loss}")
             except Exception as e:
                 print(f"  Warning: failed to fully resume checkpoint: {e}")
@@ -459,4 +482,3 @@ def train():
 
 if __name__ == "__main__":
     train()
-

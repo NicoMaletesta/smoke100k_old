@@ -7,7 +7,7 @@ TRAIN = {
     "batch_size":   16,
     "epochs":      50,
     "img_size":   512,                # per il training
-    "lr":         1e-4,
+    "lr":         1e-5,
 
     # Loss weights
 
@@ -27,10 +27,12 @@ TRAIN = {
     "boundary_weight": 0,
     "patience":   20,                 # early stopping
     "save_mode":  'best',             # 'best' | 'all'
-    "checkpoint_dir": r"/home/nicola/Scaricati/checkpointssept16",
-    "log_dir":        r"/home/nicola/Scaricati/checkpointssept16/logs",
+    "checkpoint_dir": r"/home/nicola/Scaricati/checkpointssept17",
+    "log_dir":        r"/home/nicola/Scaricati/checkpointssept17/logs",
+    "reinit_optimizer": True,
+    "restore_metrics": False,
     #percorso per fare il resume del training a partire da un modello ( None per partire da zero)
-    "resume": r"/home/nicola/Documenti/smokedetector_1409/smoke_val_loss_best_epoch011_loss0_5470.pth",
+    "resume": r"/home/nicola/Documenti/smokeresults cell/partially_good_smokedetector/smoke_best_1409.pth",
 #r"/home/nicola/Scrivania/segmentation models/smoke/smoke_best.pth"
     # DATASET MODE
     "target_mode": "binary",          # 'soft' (default) or 'binary'
@@ -38,5 +40,5 @@ TRAIN = {
 
     # monitoring defaults
     "monitor_metric": "binary_iou",  # 'soft_iou' or 'binary_iou'
-    "threshold_for_monitor": 0.5,
+    "threshold_for_monitor": 0.3,
 }
