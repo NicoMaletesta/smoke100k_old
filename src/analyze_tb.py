@@ -40,7 +40,7 @@ def launch_tensorboard(logdir: str, port: int = 6006):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Avvia TensorBoard su una directory di log.")
     parser.add_argument("--logdir", type=str,
-                        default=r"/home/nicola/Documenti/smokedetector_1109/logs/tb/20250911-223931",
+                        default=r"/home/nicola/Documenti/smokedetector_2309/logs/tb/20250923-234804",
                         help="Percorso alla directory dei log (.tfevents.*)")
     parser.add_argument("--port", type=int, default=6006,
                         help="Porta (default: 6006)")

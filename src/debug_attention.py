@@ -126,9 +126,9 @@ def tensor_to_numpy_map(t: torch.Tensor) -> np.ndarray:
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--img", default=r"/home/nicola/Scrivania/test image from the net/7.jpeg", help="Percorso immagine RGB")
-    parser.add_argument("--checkpoint", default=None, help="Percorso checkpoint (opzionale)")
-    parser.add_argument("--outdir", default=r"/home/nicola/Scaricati/checkpointssept22/attn_debug", help="Cartella output")
+    parser.add_argument("--img", default=r"/home/nicola/Scrivania/test image from the net/00045.JPG", help="Percorso immagine RGB")
+    parser.add_argument("--checkpoint", default=r"/home/nicola/Documenti/smokedetector_2309/smoke_best.pth", help="Percorso checkpoint (opzionale)")
+    parser.add_argument("--outdir", default=r"/home/nicola/Documenti/smokedetector_2309/attn_debug", help="Cartella output")
     parser.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
     parser.add_argument("--input-size", type=int, default=512, help="Size H=W per il modello")
     parser.add_argument("--pretrained-backbone", default=True, help="Se usare weights ImageNet per backbone se no checkpoint")
