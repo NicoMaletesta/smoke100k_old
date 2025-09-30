@@ -138,7 +138,7 @@ def main():
     p = argparse.ArgumentParser()
     p.add_argument("--image_dir", default = r"/home/nicola/Immagini/test frames", help="cartella con immagini RGB")
     p.add_argument("--out_dir", default = r"/home/nicola/Immagini/test frames/over", help="cartella di output (probmaps, rgb_masked, overlays)")
-    p.add_argument("--model_path", default=r"/home/nicola/Documenti/smokedetector_2309/smoke_best.pth", help="checkpoint del modello (train.py output)")
+    p.add_argument("--model_path", default=r"/home/nicola/Documenti/smokedetector_2909/smoke_best.pth", help="checkpoint del modello (train.py output)")
     p.add_argument("--size", type=int, default=512, help="dimensione di input al modello (es. 512)")
     p.add_argument("--batch_size", type=int, default=4)
     p.add_argument("--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu")
@@ -230,7 +230,7 @@ def main():
                 alpha_u8 = (np.clip(alpha,0,1)*255.0).astype(np.uint8)
                 heat = cv2.applyColorMap(alpha_u8, cv2.COLORMAP_INFERNO)
                 blended = cv2.addWeighted(cv2.cvtColor(orig_rgb, cv2.COLOR_RGB2BGR), 0.6, heat, 0.4, 0)
-                cv2.imwrite(str(overlays_dir / (stem + "_overlay.png")), blended)
+                cv2.imwrite(str(overlays_dir / (stem + ".png")), blended)
 
             # print brief info
             mean_p = float(prob_post.mean())
