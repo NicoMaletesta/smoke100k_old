@@ -144,8 +144,8 @@ def to_tensor_and_check(img_pil: Image.Image, mask_arr: np.ndarray, target_mode:
 
 def main():
     parser = argparse.ArgumentParser(description="Check processing of a single image+GT mask pair")
-    parser.add_argument("--image", default= r"/home/nicola/Immagini/Video Frames - Regione Calabria/reg cal 26/Images/cutout_regcal_26_019.png", help="Path to RGB image")
-    parser.add_argument("--mask", default= r"/home/nicola/Immagini/Video Frames - Regione Calabria/reg cal 26/masks/cutout_regcal_26_019.png", help="Path to GT mask (any bitdepth) ")
+    parser.add_argument("--image", default= r"/home/nicola/Immagini/Video Frames - Regione Calabria/reg cal 26/images/cutout_regcal_26_046.png", help="Path to RGB image")
+    parser.add_argument("--mask", default= r"/home/nicola/Immagini/Video Frames - Regione Calabria/reg cal 26/masks/cutout_regcal_26_046.png", help="Path to GT mask (any bitdepth) ")
     parser.add_argument("--outdir", default=r"/home/nicola/Immagini/maskcheck", help="Folder where overlays and diagnostics are written")
     parser.add_argument("--binary","-b", default= True, help="Also produce binary-processed outputs (threshold default 0.5)")
     parser.add_argument("--threshold","-t", type=float, default=0.1, help="Threshold for binary mode")

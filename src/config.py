@@ -3,11 +3,11 @@
 # ===== file: config.py =====
 # ─── TRAINING ────────────────────────────────────────────
 TRAIN = {
-    "data_dir":    r"/home/nicola/Scaricati/little_smoke100k",
-    "batch_size":   16,
+    "data_dir":    r"/home/nicola/Immagini/manual test",
+    "batch_size":   12,
     "epochs":      50,
     "img_size":   512,                # per il training
-    "lr":         1e-4,
+    "lr":         1e-5,
 
     # Loss weights
 
@@ -27,12 +27,12 @@ TRAIN = {
     "boundary_weight": 0,
     "patience":   20,                 # early stopping
     "save_mode":  'best',             # 'best' | 'all'
-    "checkpoint_dir": r"/home/nicola/Scaricati/checkpointssept22",
-    "log_dir":        r"/home/nicola/Scaricati/checkpointssept22/logs",
+    "checkpoint_dir": r"/home/nicola/Scaricati/checkpointsoct2",
+    "log_dir":        r"/home/nicola/Scaricati/checkpointsoct2/logs",
     "reinit_optimizer": True,
     "restore_metrics": False,
     #percorso per fare il resume del training a partire da un modello ( None per partire da zero)
-    "resume":None,
+    "resume":r"/home/nicola/Documenti/smokedetector_2909/smoke_best.pth",
 #r"/home/nicola/Scrivania/segmentation models/smoke/smoke_best.pth"
     # DATASET MODE
     "target_mode": "binary",          # 'soft' (default) or 'binary'

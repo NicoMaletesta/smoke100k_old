@@ -144,8 +144,8 @@ def extract_frames(video_path: Path, out_dir: Path, ext: str = ".png", overwrite
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--mode", default="video", choices=("video","folder"), help="video or folder mode")
-    ap.add_argument("--input", default=r"/home/nicola/Immagini/cut out video reg cal/cutout_regcal_26.mp4", help="input video file or input folder")
-    ap.add_argument("--output", default=r"/home/nicola/Immagini/Video Frames - Regione Calabria/reg cal 26", help="output folder to store frames")
+    ap.add_argument("--input", default=r"/home/nicola/Immagini/cut out video reg cal/Nosmoke_cutout_regcal_2.mp4", help="input video file or input folder")
+    ap.add_argument("--output", default=r"/home/nicola/Immagini/Video Frames - Regione Calabria/Nosmoke_cutout_regcal_2", help="output folder to store frames")
     ap.add_argument("--ext", default=".png", help="image extension (default .png)")
     ap.add_argument("--overwrite", action="store_true", help="overwrite existing frames")
     ap.add_argument("--skip_count_pass", action="store_true", help="skip double-pass counting for zero-padding when frame count is unknown")
